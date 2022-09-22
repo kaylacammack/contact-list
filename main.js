@@ -10,6 +10,27 @@ let contacts = []
  * *** push: resources/push.jpg
  */
 function addContact(event) {
+  event.preventDefault();
+  let form = event.target;
+  let contactName = form.name.value;
+  let phoneNumber = form.phone.value;
+  let emergencyContact = '';
+  if (form.emergencyContact.checked) {
+    emergencyContact = 'emergency-contact';
+  } else {
+    emergencyContact = '';
+  }
+
+  let newContact = contacts.find(contact => contact.name == contactName);
+
+  if (!newContact) {
+    newContact = {contactId: generateId(), name: contactName, phone: phoneNumber, emergencyContact: emergencyContact}
+    contacts.push(newContact)
+    saveContacts()
+  }
+  
+  form.reset();
+  drawContacts();
 }
 
 /**
@@ -17,6 +38,8 @@ function addContact(event) {
  * Saves the string to localstorage at the key contacts 
  */
 function saveContacts() {
+  window.localStorage.setItem("contacts", JSON.stringify(contacts))
+  drawContacts();
 }
 
 /**
@@ -25,6 +48,10 @@ function saveContacts() {
  * the contacts array to the retrieved array
  */
 function loadContacts() {
+  let contactsData = JSON.parse(window.localStorage.getItem("contacts"))
+  if(contactsData){
+    contacts = contactsData
+  }
 }
 
 /**
@@ -33,6 +60,27 @@ function loadContacts() {
  * contacts in the contacts array
  */
 function drawContacts() {
+  let template = "";
+  
+  contacts.sort((a, b) => a.name.localeCompare(b.name))
+
+  contacts.forEach(contact => {
+    template += `
+    <div class="card mt-1 mb-1 ${contact.emergencyContact}">
+      <h3 class="mt-1 mb-1">${contact.name}</h3>
+      <div class="d-flex space-between">
+        <p>
+          <i class="fa fa-fw fa-phone"></i>
+          <span>${contact.phone}</span>
+        </p>
+        <i class="action fa fa-trash text-danger" onclick="removeContact('${contact.contactId}')"></i>
+      </div>
+    </div>
+    `
+  });
+
+  document.getElementById("contact-list").innerHTML = template;
+  
 }
 
 /**
@@ -45,12 +93,19 @@ function drawContacts() {
  * @param {string} contactId 
  */
 function removeContact(contactId) {
+  let index = contacts.findIndex(contact => contact.contactId === contactId);
+  if(index == -1){
+    throw new Error("Invalid Contact Id")
+  }
+  contacts.splice(index, 1);
+  saveContacts();
 }
 
 /**
  * Toggles the visibility of the AddContact Form
  */
 function toggleAddContactForm() {
+  document.getElementById('new-contact-form').classList.toggle("hidden")
 }
 
 

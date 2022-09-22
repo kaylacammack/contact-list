@@ -192,3 +192,8 @@ button:hover{
 .contacts::-webkit-scrollbar {
   width: 0;
 }
+
+#checkbox {
+  float: left;
+  width: auto;
+}
